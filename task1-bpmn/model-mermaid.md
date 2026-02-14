@@ -1,6 +1,6 @@
 # BPMN Process Model - Mermaid Diagram
 
-## 📊 Mermaid Diagram Visualization
+## Mermaid Diagram Visualization
 
 ```mermaid
 graph TD
@@ -53,7 +53,7 @@ graph TD
     J --> K
 ```
 
-## 🔍 Alternative Flow View
+## Alternative Flow View
 
 ```mermaid
 flowchart TD
@@ -86,14 +86,16 @@ flowchart TD
     U --> K
 ```
 
-## 📋 Process Elements Summary
+## Process Elements Summary
 
 ### Events
+
 - **Start Event**: "Пользователю нужно оборудование"
 - **Intermediate Event**: "Ожидание поставки"
 - **End Event**: "Процесс завершен"
 
 ### Tasks
+
 - **User Tasks**: Получить оборудование, Оценить сервис
 - **Support Tasks**: Принять заявку, Создать заявку, Выдать оборудование, Закрыть заявки
 - **Supply Tasks**: Принять заявку, Проверить наличие, Вызвать логистику, Заказать у поставщика, Получить от поставщика, Провести приемку
@@ -101,12 +103,10 @@ flowchart TD
 - **Supplier Tasks**: Получить заказ, Обработать заказ, Доставить оборудование
 
 ### Gateways
+
 - **Exclusive Gateway**: "Оборудование доступно?" (Да/Нет)
 
 ### Message Flows
+
 - **Message Flow 1**: Заказ поставщику
 - **Message Flow 2**: Доставка от поставщика
-
----
-
-*This Mermaid diagram provides a visual representation of the BPMN process that can be rendered in GitHub and most IDEs.*
