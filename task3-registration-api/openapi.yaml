@@ -1,0 +1,279 @@
+openapi: 3.0.3
+info:
+  title: User Registration API
+  description: API для регистрации пользователей в системе
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+  - url: https://staging-api.example.com/v1
+    description: Staging server
+
+paths:
+  /users/register:
+    post:
+      tags:
+        - Authentication
+      summary: Регистрация нового пользователя
+      description: |
+        Создает нового пользователя в системе. 
+        После успешной регистрации пользователю отправляется email для подтверждения.
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequest'
+            examples:
+              validRequest:
+                summary: Валидный запрос на регистрацию
+                value:
+                  email: "john.doe@example.com"
+                  password: "SecurePass123!"
+                  firstName: "John"
+                  lastName: "Doe"
+              invalidPassword:
+                summary: Запрос с невалидным паролем
+                value:
+                  email: "john.doe@example.com"
+                  password: "123"
+                  firstName: "John"
+                  lastName: "Doe"
+      responses:
+        '201':
+          description: Пользователь успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResponse'
+              examples:
+                successResponse:
+                  summary: Успешный ответ
+                  value:
+                    id: "550e8400-e29b-41d4-a716-446655440000"
+                    email: "john.doe@example.com"
+                    firstName: "John"
+                    lastName: "Doe"
+                    createdAt: "2024-02-14T20:15:30Z"
+                    status: "pending_verification"
+        '400':
+          description: Ошибка валидации входных данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validationError:
+                  summary: Ошибка валидации
+                  value:
+                    error: "VALIDATION_ERROR"
+                    message: "Invalid input data"
+                    details:
+                      - field: "email"
+                        message: "Invalid email format"
+                      - field: "password"
+                        message: "Password must be at least 8 characters long"
+        '409':
+          description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                conflictError:
+                  summary: Пользователь уже существует
+                  value:
+                    error: "USER_ALREADY_EXISTS"
+                    message: "User with this email already registered"
+                    details: []
+        '422':
+          description: Необрабатываемые данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unprocessableError:
+                  summary: Необрабатываемые данные
+                  value:
+                    error: "UNPROCESSABLE_ENTITY"
+                    message: "Request contains unprocessable data"
+                    details: []
+        '429':
+          description: Слишком много запросов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rateLimitError:
+                  summary: Превышен лимит запросов
+                  value:
+                    error: "RATE_LIMIT_EXCEEDED"
+                    message: "Too many registration attempts. Please try again later."
+                    details:
+                      - retryAfter: 300
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Внутренняя ошибка
+                  value:
+                    error: "INTERNAL_SERVER_ERROR"
+                    message: "An unexpected error occurred"
+                    details: []
+        '503':
+          description: Сервис временно недоступен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serviceUnavailable:
+                  summary: Сервис недоступен
+                  value:
+                    error: "SERVICE_UNAVAILABLE"
+                    message: "Service temporarily unavailable. Please try again later."
+                    details: []
+
+components:
+  schemas:
+    RegistrationRequest:
+      type: object
+      required:
+        - email
+        - password
+        - firstName
+        - lastName
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email адрес пользователя
+          example: "john.doe@example.com"
+          maxLength: 255
+        password:
+          type: string
+          format: password
+          description: Пароль пользователя (минимум 8 символов, 1 заглавная буква, 1 цифра)
+          example: "SecurePass123!"
+          minLength: 8
+          maxLength: 128
+          pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$'
+        firstName:
+          type: string
+          description: Имя пользователя
+          example: "John"
+          minLength: 1
+          maxLength: 50
+          pattern: '^[a-zA-Zа-яА-Я\s-]+$'
+        lastName:
+          type: string
+          description: Фамилия пользователя
+          example: "Doe"
+          minLength: 1
+          maxLength: 50
+          pattern: '^[a-zA-Zа-яА-Я\s-]+$'
+      additionalProperties: false
+
+    RegistrationResponse:
+      type: object
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - createdAt
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор пользователя
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        email:
+          type: string
+          format: email
+          description: Email адрес пользователя
+          example: "john.doe@example.com"
+        firstName:
+          type: string
+          description: Имя пользователя
+          example: "John"
+        lastName:
+          type: string
+          description: Фамилия пользователя
+          example: "Doe"
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата и время создания пользователя
+          example: "2024-02-14T20:15:30Z"
+        status:
+          type: string
+          enum: ["pending_verification", "active", "suspended"]
+          description: Статус пользователя
+          example: "pending_verification"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - details
+      properties:
+        error:
+          type: string
+          description: Код ошибки
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: Человекочитаемое сообщение об ошибке
+          example: "Invalid input data"
+        details:
+          type: array
+          description: Детальная информация об ошибках
+          items:
+            oneOf:
+              - type: object
+                properties:
+                  field:
+                    type: string
+                    description: Название поля с ошибкой
+                    example: "email"
+                  message:
+                    type: string
+                    description: Описание ошибки
+                    example: "Invalid email format"
+              - type: object
+                properties:
+                  retryAfter:
+                    type: integer
+                    description: Через сколько секунд можно повторить запрос
+                    example: 300
+          example: []
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Authentication
+    description: Операции аутентификации и авторизации
